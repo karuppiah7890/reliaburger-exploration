@@ -1,0 +1,9 @@
+[app.demo-app]
+image = "busybox"
+command = ["sh"]
+args = [
+    "-c",
+    "sleep",
+    "100",
+]
+replicas = 2

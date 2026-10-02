@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: hello
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: hello
+  template:
+    metadata:
+      labels:
+        app: hello
+    spec:
+      containers:
+      - command:
+        - /bin/sh
+        - -c
+        - echo hello-started; mkdir -p /tmp/www; printf 'Reliaburger is running\n' > /tmp/www/index.html; exec httpd -f -p 8080 -h /tmp/www
+        env:
+        - name: PATH
+          value: /usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin
+        image: public.ecr.aws/docker/library/busybox@sha256:9532d8c39891ca2ecde4d30d7710e01fb739c87a8b9299685c63704296b16028
+        name: hello
+        ports:
+        - containerPort: 8080
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: hello
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  selector:
+    app: hello
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: hello-ingress
+spec:
+  rules:
+  - host: localhost
+    http:
+      paths:
+      - backend:
+          service:
+            name: hello
+            port:
+              number: 8080
+        pathType: Prefix
